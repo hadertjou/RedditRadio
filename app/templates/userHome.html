@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <script src="http://code.responsivevoice.org/responsivevoice.js"></script>
+        <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+        <link href="../static/css/userHome.css" rel="stylesheet">
+        <script src="../static/js/userHome.js"></script>
+    </head>
+<body>
+<div class="container">
+    <div class="header">
+        <nav>
+            <ul class="nav nav-pills pull-right">
+                <li role="presentation"><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+        <h3 class="text-muted">Home</h3>
+        
+    </div>
+
+    <div class="jumbotron">
+        <h1>Reddit Radio</h1>
+        <!-- <h4>{{error}}</h4> -->
+        <h4 id="statusDisplay">Status</h4>
+        <form class="form-signin">
+          <input type="text" id="inputSub" name="inputSub" class="form-control" placeholder="Enter One Subreddit" required autofocus>
+          <h4>Number Of Threads To Grab</h4>
+          <input type="number" id='inputQuantity' name="inputQuantity" class="number-control" min="0" max="7" value="1">
+          <button id="btnSubmit" class="btn btn-lg btn-primary btn-block" type="button" disabled>Submit</button>
+        </form> 
+    </div>
+    <div class="jumbotron">
+        <h3> Controls </h3>
+        <ul class="nav nav-pills"> <!-- center-pills"> -->
+            <button id="btnPlay" role="presentation" class="btn btn-lg btn-primary btn-block" type="button">Play</button>
+            <button id="btnPause" role="presentation" class="btn btn-lg btn-primary btn-block" type="button">Pause</button>
+            <button id="btnResume" role="presentation" class="btn btn-block btn-primary" type="button">Resume</button>
+            <button id="btnSkip" role="presentation" class="btn btn-block btn-primary" type="button">Skip</button>
+            <!-- <li role="presentation" class="active"><a href="#">Pause</a></li> -->
+            <!-- <li role="presentation" class="active"><a href="#">Resume</a></li> -->          
+        </ul>
+        <h2 id="speakersymbol"></h2>
+
+    </div>
+
+
+    <div class="jumbotron">  
+        <h2 id="showText">Press Play</h2>
+    </div>
+
+    <footer class="footer">
+           <button id="btnFlush" class="btn btn-lg btn-primary btn-block" type="button">Flush</button> 
+    </footer>
+
+</div>
+
+<script type="text/javascript">
+
+    responsiveVoice.setDefaultVoice("UK English Female");
+    var line = "Ready";
+
+    var parameters = {
+        onend: voiceEndCallback
+    }
+
+    if(!responsiveVoice.isPlaying())
+    {
+        document.getElementById("speakersymbol").innerHTML = '';
+    }
+
+    function play(){
+        document.getElementById("speakersymbol").innerHTML = '&#128266';
+        responsiveVoice.speak(line, "UK English Female", parameters);
+    }
+
+    function pause(){
+        document.getElementById("speakersymbol").innerHTML = "";
+        responsiveVoice.pause();
+    }
+
+    function resume(){
+        document.getElementById("speakersymbol").innerHTML = '&#128266';
+        responsiveVoice.resume();
+    }
+
+    function voiceEndCallback()
+    {
+        //call server to send get another text block
+        //alert("inendcallback");
+        $.ajax({
+            url: '/getLine',
+            type: 'GET',
+            success: function(res) {
+                try {
+                    var myVar = setTimeout(voiceEndCallback, 5000);
+                    //res = res.replace(/(\r\n|\n|\r)/gm,"");
+                    //someText = someText.replace(/(\r\n|\n|\r)/gm,"");                   
+                    console.log(res);
+                    var rec = JSON.parse(res);  
+                    line = rec.paragraph;
+                    if(line == '-1: FINISHED: -1'){
+                        line = "BROADCAST FINISHED";
+                        document.getElementById("showText").innerHTML = line;
+                        document.getElementById("speakersymbol").innerHTML = '';
+                        return 0;    
+                    }
+                    document.getElementById("showText").innerHTML = line;
+                    clearTimeout(myVar);
+                    play();
+                }
+                catch(err){
+                    document.getElementById("speakersymbol").innerHTML = "";
+                    console.log(err);
+                    line = "error something happened";
+                    play();
+                }
+
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+        
+    }
+
+    function voiceStartCallback()
+    {
+        //this will be used for buffer eventually
+
+    }
+
+
+</script>
+
+
+
+
+
+</body>
+</html>
+
+
+

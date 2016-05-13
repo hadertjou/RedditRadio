@@ -9,7 +9,7 @@ from app import app, db, celery
 #from flask.ext.sqlalchemy import SQLAlchemy
 #app = Flask(__name__)
 #mysql = MySQL()
-#uri = 'mysql://admin:admin@localhost/redditreader2'
+#uri = 'mysql://{username}:{password}@localhost/{dbname}'
 #app.config['SQLALCHEMY_DATABASE_URI'] = uri
 #db = SQLAlchemy(app)
 
